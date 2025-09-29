@@ -82,8 +82,6 @@ def update_from_event_schedule(gspread_client) -> None:
   if not sheet_needs_update(sheet):
     return
 
-  delete_all_entries()  # TODO: if we pull in volunteer data, factor this one out
-
   # Ideally, we'd be able to pull the formatting for these cells and flag 12-pt format cells
   # as a header, but I don't see a way to get it from gspread, so we hoof it with this regex.
   header_regex = re.compile(r"^(?:Classic|Singles|Doubles|Gauntlet|Team|Co-Op|Pool|Set|Top|Winner|Loser|Final|Last Chance|Callbacks|Gig|Seed|SF|WaNT|#|Extra Time|MAINT|GROUP)[\s\S]*$")
@@ -122,6 +120,8 @@ def update_from_event_schedule(gspread_client) -> None:
         [participant_events[n].append(event_tag) for n in names]
 
   del participant_events[""]
+
+  delete_all_entries()  # TODO: if we pull in volunteer data, factor this one out
 
   with TABLE_CLIENT.batch_writer() as batch:
     for name, events in participant_events.items():
