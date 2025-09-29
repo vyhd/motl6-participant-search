@@ -50,8 +50,8 @@ class ParticipantTable:
         return sorted(names)
 
     def list_events(self, participant_name: str) -> Iterable[Event]:
-        self.table_client.get_item(Key={"name": participant_name})
-        # TODO: finish
+        response = self.table_client.get_item(Key={"name": participant_name})
+        return response["Item"]["events"]
 
     #
     # Update job APIs
