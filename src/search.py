@@ -23,6 +23,9 @@ EVENT_SCHEDULE_SHEET_ID = "1vjNzS_-PXPbEyCr7LfQ2iaV58iwOHDRlXBFjq96Kyhw"
 
 METADATA_ITEM_KEY = "__meta__"
 
+class NotFoundException(Exception):
+  pass
+
 
 def delete_all_entries() -> None:
   """Lists, then removes, all keys in the table."""
@@ -48,7 +51,7 @@ def sheet_needs_update(sheet: gspread.Spreadsheet) -> bool:
 
     # we can get an empty payload with no item. sigh. if that happens, punt to the exception handler
     if not payload.get("Item"):
-      raise API_CLIENT.exceptions.ResourceNotFoundException
+      raise NotFoundException()
 
     metadata = payload["Item"]
     last_seen_update = metadata["lastUpdate"][sheet.id]
@@ -59,7 +62,7 @@ def sheet_needs_update(sheet: gspread.Spreadsheet) -> bool:
       metadata["lastUpdate"][sheet.id] = last_update
       TABLE_CLIENT.put_item(Item=metadata)
       return True
-  except API_CLIENT.exceptions.ResourceNotFoundException:
+  except (API_CLIENT.exceptions.ResourceNotFoundException, NotFoundException):
     print(f"'{sheet.title}' has never been processed. Updating.")
 
     TABLE_CLIENT.put_item(Item={
