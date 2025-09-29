@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Widget to enable searching MotL 6 event schedules by participant name
+Transform:
+- AWS::Serverless-2016-10-31
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Runtime: python3.13
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref ParticipantTable
+
+Parameters:
+  GoogleApiKey:
+    Type: String
+    Description: The API key used to access Google Sheets data.
+
+Resources:
+  ListParticipants:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/api.list_participants_lambda
+      Description: Returns a list of all names in alphabetical order.
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ParticipantTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /participants
+            Method: GET
+
+  # DynamoDB table to store records like the following:
+  # {"name": "vyhd", "events": [{"day": "Friday", "event": "Singles", "time": "11:00 AM"}, ...]
+  ParticipantTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: !Sub "${AWS::StackName}-items"
+      KeySchema:
+        - AttributeName: "name"
+          KeyType: "HASH"
+      AttributeDefinitions:
+        - AttributeName: "name"
+          AttributeType: "S"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      # GSI just for names: we want to dynamically list participants, scanning the table is wasteful
+      GlobalSecondaryIndexes:
+        - IndexName: "Participants"
+          KeySchema:
+            - AttributeName: "name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "KEYS_ONLY"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+
+Outputs:
+  WebEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/Prod/"
