@@ -36,6 +36,24 @@ Resources:
             Path: /participants
             Method: GET
 
+  ListParticipantEvents:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/api.list_participant_events_lambda
+      Description: Returns a list of events for a specific participant.
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ParticipantTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /events
+            Method: GET
+            RequestParameters:
+              - method.request.querystring.name:
+                  Required: true
+
   # DynamoDB table to store records like the following:
   # {"name": "vyhd", "events": [{"day": "Friday", "event": "Singles", "time": "11:00 AM"}, ...]
   ParticipantTable:

@@ -36,7 +36,7 @@ def list_participants_lambda(event, context) -> ProxyResponse:
 
 
 def list_participant_events_lambda(event, context) -> ProxyResponse:
-    participant_name = event.get("pathParameters", {}).get("name")
+    participant_name = event.get("queryParameters", {}).get("name")
     try:
         result = TABLE_CLIENT.get_item(Key={"name": participant_name})
         response = {
@@ -59,4 +59,4 @@ if __name__ == "__main__":
     list_participants_lambda({}, {})
 
     print("List participant events...")
-    list_participant_events_lambda({"pathParameters": {"name": "vyhd-testing"}}, {})
+    list_participant_events_lambda({"queryParameters": {"name": "vyhd-testing"}}, {})
