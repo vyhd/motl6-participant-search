@@ -22,7 +22,10 @@ def list_participants_lambda(event, context) -> ProxyResponse:
         paginator = API_CLIENT.get_paginator("scan").paginate(**args)
 
         # [{"Items": {"name": {"S": "vyhd"}, ...}, ...] --> ["vyhd", ...]
+        # (plus a hack to filter out the metadata key ._.)
         names = [item["name"]["S"] for page in paginator for item in page["Items"]]
+        names = [name for name in names if not name.startswith("__")]
+
         response = {"names": sorted(names)}
 
         print(f"Response: {response}")
