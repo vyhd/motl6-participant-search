@@ -22,7 +22,8 @@ def list_participants_lambda(event, context) -> ProxyResponse:
 
 
 def list_participant_events_lambda(event, context) -> ProxyResponse:
-    participant_name = event.get("queryParameters", {}).get("name")
+    participant_name = event.get("queryStringParameters", {}).get("name")
+
     try:
         events = _TABLE.list_events(participant_name)
 
