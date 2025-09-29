@@ -1,10 +1,10 @@
 import json
 import traceback
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 class ProxyResponse(TypedDict):
     statusCode: int
-    body: str
+    body: Optional[str]
 
 
 from .participants import ParticipantTable
@@ -36,6 +36,20 @@ def list_participant_events_lambda(event, context) -> ProxyResponse:
         return {"statusCode": 200, "body": json.dumps(response)}
     except _TABLE.ResourceNotFoundException:
         return {"statusCode": 404, "body": f"Participant '{participant_name} not found."}
+    except Exception as e:
+        traceback.print_exc()
+        return {"statusCode": 500, "body": repr(e)}
+
+
+def get_last_update_time_lambda(event, context) -> ProxyResponse:
+    try:
+        metadata = _TABLE.get_metadata()
+
+        if metadata:
+            print(f"Response: {metadata}")
+            return {"statusCode": 200, "body": json.dumps(metadata.get("lastUpdate", "never"))}
+        else:
+            return {"statusCode": 204, "body": None}
     except Exception as e:
         traceback.print_exc()
         return {"statusCode": 500, "body": repr(e)}

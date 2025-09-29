@@ -54,6 +54,21 @@ Resources:
               - method.request.querystring.name:
                   Required: true
 
+  GetLastUpdateTime:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/api.get_last_update_time_lambda
+      Description: Returns the last update time from the event spreadsheet.
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ParticipantTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /last-update
+            Method: GET
+
   # DynamoDB table to store records like the following:
   # {"name": "vyhd", "events": [{"day": "Friday", "category": "DDR White (1)", "event": "Singles", "time": "11:00 AM"}, ...]
   ParticipantTable:
