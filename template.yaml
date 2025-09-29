@@ -55,7 +55,7 @@ Resources:
                   Required: true
 
   # DynamoDB table to store records like the following:
-  # {"name": "vyhd", "events": [{"day": "Friday", "event": "Singles", "time": "11:00 AM"}, ...]
+  # {"name": "vyhd", "events": [{"day": "Friday", "category": "DDR White (1)", "event": "Singles", "time": "11:00 AM"}, ...]
   ParticipantTable:
     Type: "AWS::DynamoDB::Table"
     Properties:

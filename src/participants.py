@@ -2,6 +2,7 @@ from typing import Iterable, Literal, Optional, TypedDict
 
 class Event(TypedDict):
   day: Literal["Thursday", "Friday", "Saturday", "Sunday"]
+  category: str
   event: str
   time: str
 

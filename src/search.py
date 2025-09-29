@@ -75,9 +75,10 @@ def update_from_event_schedule(gspread_client) -> None:
         names = [n.strip() for n in cell.value.replace("\n", ",").split(",")]
 
         event_tag: Event = {
+          "category": sheet_cells[1][cell.col].value,  # e.g. "DDR White (1)"
           "day": day.title,
-          "event": sheet_cells[cell.row - 1][cell.col].value,
-          "time": sheet_cells[cell.row][1].value,
+          "event": sheet_cells[cell.row - 1][cell.col].value, # e.g. "WaNT Acc Pool A (11-13)"
+          "time": sheet_cells[cell.row - 1][1].value,  # e.g. "11:30 AM" - must align with title, not name
         }
 
         [participant_events[n].append(event_tag) for n in names]
