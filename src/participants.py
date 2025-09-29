@@ -1,4 +1,3 @@
-import boto3
 from typing import Iterable, Literal, Optional, TypedDict
 
 class Event(TypedDict):
@@ -11,13 +10,16 @@ class ParticipantTable:
     PARTICIPANT_INDEX_NAME = "Participants"  # must agree with template.yaml GSI
     METADATA_ITEM_KEY = "__meta__"
 
-    def __init__(self, table_name: str):
-        self.table_name = table_name
+    def __init__(self):
+        import os
+        import boto3
+
+        self.table_name = os.environ["TABLE_NAME"]
 
         self.api_client = boto3.client("dynamodb")
-        self.table_client = boto3.resource("dynamodb").Table(table_name)
+        self.table_client = boto3.resource("dynamodb").Table(self.table_name)
 
-        # Make these exceptions catchable from the outer context
+        # Make exceptions catchable from the outer context
         self.ResourceNotFoundException = self.api_client.exceptions.ResourceNotFoundException
 
     def get_metadata(self) -> Optional[dict]:
@@ -35,10 +37,10 @@ class ParticipantTable:
     #
 
     def list_participants(self) -> Iterable[str]:
-        paginator = self.api_client.get_paginator("scan").paginate({
-            "TableName": self.table_name,
-            "IndexName": self.PARTICIPANT_INDEX_NAME
-        })
+        paginator = self.api_client.get_paginator("scan").paginate(
+            TableName=self.table_name,
+            IndexName=self.PARTICIPANT_INDEX_NAME
+        )
 
         # [{"Items": {"name": {"S": "vyhd"}, ...}, ...] --> ["vyhd", ...]
         # (plus a hack to filter out the metadata key ._.)

@@ -7,8 +7,8 @@ from collections import defaultdict
 
 SHEETS_API_KEY = os.environ["GOOGLE_API_KEY"]
 
-from participants import ParticipantTable, Event
-_TABLE = ParticipantTable(os.environ["TABLE_NAME"])
+from .participants import ParticipantTable, Event
+_TABLE = ParticipantTable()
 
 # this sheet is tied tightly to the traversal code below, so it may as well live here too
 EVENT_SCHEDULE_SHEET_ID = "1vjNzS_-PXPbEyCr7LfQ2iaV58iwOHDRlXBFjq96Kyhw"
@@ -74,7 +74,7 @@ def update_from_event_schedule(gspread_client) -> None:
         # remove the inevitable '' entry later on.
         names = [n.strip() for n in cell.value.replace("\n", ",").split(",")]
 
-        event_tag = {
+        event_tag: Event = {
           "day": day.title,
           "event": sheet_cells[cell.row - 1][cell.col].value,
           "time": sheet_cells[cell.row][1].value,

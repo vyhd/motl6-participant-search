@@ -1,4 +1,3 @@
-import os
 import json
 import traceback
 from typing import TypedDict
@@ -8,8 +7,8 @@ class ProxyResponse(TypedDict):
     body: str
 
 
-from participants import ParticipantTable
-_TABLE = ParticipantTable(os.environ["TABLE_NAME"])
+from .participants import ParticipantTable
+_TABLE = ParticipantTable()
 
 def list_participants_lambda(event, context) -> ProxyResponse:
     try:
