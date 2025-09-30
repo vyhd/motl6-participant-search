@@ -85,6 +85,8 @@ def update_from_event_schedule(gspread_client) -> None:
 
   del participant_events[""]
 
+  # wipe and reload
+  _TABLE.delete_all_participants()
   _TABLE.write_events(participant_events)
   update_timestamp(sheet)
 
