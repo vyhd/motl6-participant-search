@@ -74,17 +74,18 @@
     inputNode.addEventListener("input", (event) => {
       let name = inputNode.value;
       if (name.length > 0) {
-        const matches = client.participants.filter((n) => n.toLowerCase().startsWith(name));
+        const matches = client.participants.filter((n) => n.toLowerCase().startsWith(name.toLowerCase()));
         setParticipants(matches);
       } else {
         setParticipants([]);
       }
 
       if (client.participants.includes(name)) {
+        setParticipants([]);
         spinnerNode.hidden = false;
         client.fetchParticipantEvents(name);
       }
-    })
+    });
   </script>
 </body>
 </html>
