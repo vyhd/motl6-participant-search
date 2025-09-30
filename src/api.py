@@ -3,9 +3,22 @@ import traceback
 from typing import Optional, TypedDict
 
 class ProxyResponse(TypedDict):
+    """The response structure expected by API Gateway."""
     statusCode: int
+    headers: dict
     body: Optional[str]
 
+def resp(status_code: int, body: Optional[str] = None) -> ProxyResponse:
+    """Returns an HTTP response for this API, including CORS headers on every response."""
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Methods": "OPTIONS,GET"
+        },
+        "body": body
+    }
 
 from .participants import ParticipantTable
 _TABLE = ParticipantTable()
@@ -20,10 +33,10 @@ def list_participants_lambda(event, context) -> ProxyResponse:
         response = {"names": sorted(names, key=str.lower)}
 
         print(f"Response: {response}")
-        return {"statusCode": 200, "body": json.dumps(response)}
+        return resp(200, json.dumps(response))
     except Exception as e:
         traceback.print_exc()
-        return {"statusCode": 500, "body": repr(e)}
+        return resp(500, repr(e))
 
 
 def list_participant_events_lambda(event, context) -> ProxyResponse:
@@ -38,12 +51,12 @@ def list_participant_events_lambda(event, context) -> ProxyResponse:
         }
 
         print(f"Response: {response}")
-        return {"statusCode": 200, "body": json.dumps(response)}
+        return resp(200, json.dumps(response))
     except _TABLE.ResourceNotFoundException:
-        return {"statusCode": 404, "body": f"Participant '{participant_name} not found."}
+        return resp(404, f"Participant '{participant_name} not found.")
     except Exception as e:
         traceback.print_exc()
-        return {"statusCode": 500, "body": repr(e)}
+        return resp(500, repr(e))
 
 
 def get_last_update_time_lambda(event, context) -> ProxyResponse:
@@ -52,12 +65,12 @@ def get_last_update_time_lambda(event, context) -> ProxyResponse:
 
         if metadata:
             print(f"Response: {metadata}")
-            return {"statusCode": 200, "body": json.dumps(metadata.get("lastUpdate", "never"))}
+            return resp(200, json.dumps(metadata.get("lastUpdate", "never")))
         else:
-            return {"statusCode": 204, "body": None}
+            return resp(204)
     except Exception as e:
         traceback.print_exc()
-        return {"statusCode": 500, "body": repr(e)}
+        return resp(500, repr(e))
 
 
 if __name__ == "__main__":
