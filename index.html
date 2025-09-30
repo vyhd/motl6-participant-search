@@ -40,13 +40,11 @@
 
     function setParticipants(participants) {
       /* Given an array of participants, load them into the DOM. */
-      console.debug("setParticipants", participants);
       const childNodes = participants.map((n) => new Option(n, n));
       participantsNode.replaceChildren(...childNodes);
     }
 
     function setEvent(event) {
-      console.debug("setEvent", event);
       inputNode.value = event["name"];
 
       const newTbody = document.createElement("tbody");
@@ -62,10 +60,9 @@
       spinnerNode.hidden = true;
     }
 
-    let client = new ParticipantClient(setParticipants, setEvent);
+    let client = new ParticipantClient(setEvent);
 
     async function doUpdate() {
-      console.debug("update()")
       await client.update();
     }
 
@@ -76,16 +73,16 @@
 
     inputNode.addEventListener("input", (event) => {
       let name = inputNode.value;
-      console.debug("input", event, name);
       if (name.length > 0) {
         const matches = client.participants.filter((n) => n.toLowerCase().startsWith(name));
         setParticipants(matches);
+      } else {
+        setParticipants([]);
       }
 
-      if (client.participants.includes(inputNode.value)) {
-        console.debug("name matches, doing fetch")
+      if (client.participants.includes(name)) {
         spinnerNode.hidden = false;
-        client.fetchEvents(inputNode.value);
+        client.fetchParticipantEvents(name);
       }
     })
   </script>

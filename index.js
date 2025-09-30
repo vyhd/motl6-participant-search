@@ -5,13 +5,17 @@ class ParticipantClient {
     static LIST_PARTICIPANT_EVENTS = `${ParticipantClient.BASE_URL}/events`;
     static LAST_UPDATE = `${ParticipantClient.BASE_URL}/last-update`;
 
-    constructor(onUpdateParticipants, onEventFetch) {
-        this.onUpdateParticipants = onUpdateParticipants;
+    constructor(onEventFetch) {
         this.onEventFetch = onEventFetch;
 
         this.lastUpdate = localStorage.getItem("lastUpdate") ?? "never";
         this.participants = JSON.parse(localStorage.getItem("participants")) ?? [];
         this.lastEventFetch = JSON.parse(localStorage.getItem("lastEventFetch")) ?? null;
+
+        // eagerly load the current schedule from local storage if we have it
+        if (this.lastEventFetch !== null) {
+            this.onEventFetch(this.lastEventFetch);
+        }
     }
 
     async forceUpdate() {
@@ -28,7 +32,6 @@ class ParticipantClient {
     }
 
     async update() {
-        console.debug("ParticipantClient.update");
         // We may have multiple sources, so check the last update time for each
         const lastUpdates = await this.call(ParticipantClient.LAST_UPDATE);
         let lastServerUpdate = Object.values(lastUpdates).join(",");
@@ -42,13 +45,9 @@ class ParticipantClient {
         if (this.participants.length === 0) {
             let resp = await this.call(ParticipantClient.LIST_PARTICIPANTS);
             this.participants = resp["names"];
-
-            console.debug("participants fetch", resp);
-
             localStorage.setItem("participants", JSON.stringify(this.participants))
-            this.onUpdateParticipants(this.participants);
         }
-        
+
         if (this.lastEventFetch !== null) {
             this.onEventFetch(this.lastEventFetch);
         }
@@ -56,11 +55,12 @@ class ParticipantClient {
         localStorage.setItem("lastUpdate", lastServerUpdate);
     }
 
-    async fetchEvents(name) {
+    async fetchParticipantEvents(name) {
+        this.onEventFetch({"name": name, "events": []});
+
         const url = `${ParticipantClient.LIST_PARTICIPANT_EVENTS}?name=${encodeURIComponent(name)}`;
-        let resp = await this.call(url)
-        console.debug("fetchEvents", resp);
-        this.lastEventFetch = resp;
+        this.lastEventFetch = await this.call(url);
+
         localStorage.setItem("lastEventFetch", JSON.stringify(this.lastEventFetch));
         this.onEventFetch(this.lastEventFetch);
     }
