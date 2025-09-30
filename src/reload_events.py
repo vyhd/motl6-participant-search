@@ -5,6 +5,7 @@ from functools import cached_property
 import gspread
 import os
 import re
+from datetime import datetime, date, timedelta
 from collections import defaultdict
 
 SHEETS_API_KEY = os.environ["GOOGLE_API_KEY"]
@@ -150,7 +151,6 @@ class VolunteerSpreadsheet(Spreadsheet):
           # peek at the cell above us - if its contents are identical, we're a continuation of
           # an already-processed event and can be skipped.
           if sheet_cells[cell.row - 1][cell.col].value == cell.value:
-            print(f"Value {cell.value} matched at {cell.row-1} / {cell.col}, moving on")
             continue
 
           # categories are in large merged cells, but gspread only returns the value of the
@@ -179,6 +179,21 @@ class VolunteerSpreadsheet(Spreadsheet):
     return volunteer_events
 
 
+def event_order(event: Event) -> datetime:
+  """Parses an `event` into a number matching its place in time. This lets us sort events "naturally"."""
+  try:
+    days_of_event = ["Thursday", "Friday", "Saturday", "Sunday"]
+    print(f"event: {event}")
+    day_index = days_of_event.index(event["day"])
+
+    # parse the time, then pin the date to our starting day plus the index above
+    event_dt = datetime.strptime(event["time"], "%I:%M %p")
+    event_dt = event_dt.replace(year=2025, month=10, day=2) + timedelta(days=day_index)
+    return event_dt
+  except Exception as e:
+    import pdb
+    pdb.pm()
+
 def handler(event, context):
   try:
     event_sheet = EventSpreadsheet()
@@ -189,10 +204,14 @@ def handler(event, context):
       volunteer_events = volunteer_sheet.update()
 
       # TODO: intelligently merge both dicts, incl. sorting events
-      all_names = sorted([*player_events.keys(), *volunteer_events.keys()], key=str.lower)
+      all_events = defaultdict(list)
+
+      all_names = {*player_events.keys(), *volunteer_events.keys()}
+      for name in all_names:
+        all_events[name] = sorted([*player_events.get(name, []), *volunteer_events.get(name, [])], key=event_order)
 
       PARTICIPANTS_TABLE.delete_all_participants()
-      PARTICIPANTS_TABLE.write_events()
+      PARTICIPANTS_TABLE.write_events(all_events)
 
       event_sheet.update_timestamp()
       volunteer_sheet.update_timestamp()
