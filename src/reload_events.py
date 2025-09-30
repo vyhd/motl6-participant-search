@@ -88,7 +88,8 @@ def update_from_event_schedule(gspread_client) -> None:
   _TABLE.write_events(participant_events)
   update_timestamp(sheet)
 
-if __name__ == "__main__":
+
+def handler(event, context):
   try:
     gspread_client = gspread.api_key(SHEETS_API_KEY)
     update_from_event_schedule(gspread_client)

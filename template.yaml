@@ -69,6 +69,26 @@ Resources:
             Path: /last-update
             Method: GET
 
+  ReloadEventsJob:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/reload_events.handler
+      Description: Scheduled job to read events from the spreadsheet and write them to Dynamo.
+      Environment:
+        Variables:
+          GOOGLE_API_KEY: !Ref GoogleApiKey
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ParticipantTable
+      Events:
+        CheckForUpdatesFrequently:
+          Type: ScheduleV2
+          Properties:
+            Description: "Schedules the spreadsheet to be checked for updates"
+            ScheduleExpression: "rate(3 minutes)"
+            EndDate: "2025-10-06T00:00:00.000Z"
+
+
   # DynamoDB table to store records like the following:
   # {"name": "vyhd", "events": [{"day": "Friday", "category": "DDR White (1)", "event": "Singles", "time": "11:00 AM"}, ...]
   ParticipantTable:
