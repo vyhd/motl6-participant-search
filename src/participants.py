@@ -25,7 +25,7 @@ class ParticipantTable:
 
     def get_metadata(self) -> Optional[dict]:
         """Returns the metadata value, or None if the key doesn't exist."""
-        payload = self.table_client.get_item(Key={"name": self.METADATA_ITEM_KEY})
+        payload = self.table_client.get_item(Key={"name": self.METADATA_ITEM_KEY}, ConsistentRead=True)
         return payload["Item"] if "Item" in payload else None
 
     def put_metadata(self, metadata: dict) -> None:
