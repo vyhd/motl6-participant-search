@@ -8,16 +8,18 @@ from collections import defaultdict
 SHEETS_API_KEY = os.environ["GOOGLE_API_KEY"]
 
 from .participants import ParticipantTable, Event
-_TABLE = ParticipantTable()
+PARTICIPANTS_TABLE = ParticipantTable()
+GSPREAD_CLIENT = gspread.api_key(SHEETS_API_KEY)
 
-# this sheet is tied tightly to the traversal code below, so it may as well live here too
+# these IDs are tied tightly to the traversal code below, so they may as well live here too
 EVENT_SCHEDULE_SHEET_ID = "1tAGWcnSkPZmMhpDqkyeGkSeAvICGGRCBpXlqkh6GVJU"
+VOLUNTEER_SCHEDULE_SHEET_ID = "1xuiaO5AuWNCPoDmYjgjzH7escQ339T03DSggPbeYOQc"
 
 
 def sheet_needs_update(sheet: gspread.Spreadsheet) -> bool:
   """If True, the spreadsheet is updated and we need new records. If False, it can be skipped."""
   last_update = sheet.lastUpdateTime
-  metadata = _TABLE.get_metadata()
+  metadata = PARTICIPANTS_TABLE.get_metadata()
   last_seen_update = metadata and metadata["lastUpdate"].get(sheet.id) or "never"
 
   if not metadata or last_update != last_seen_update:
@@ -29,14 +31,14 @@ def sheet_needs_update(sheet: gspread.Spreadsheet) -> bool:
 
 
 def update_timestamp(sheet: gspread.Spreadsheet) -> None:
-  metadata = _TABLE.get_metadata()
+  metadata = PARTICIPANTS_TABLE.get_metadata()
 
   if metadata:
     metadata["lastUpdate"][sheet.id] = sheet.lastUpdateTime
   else:
     metadata = {"lastUpdate": {sheet.id: sheet.lastUpdateTime}}
 
-  _TABLE.put_metadata(metadata)
+  PARTICIPANTS_TABLE.put_metadata(metadata)
 
 
 def update_from_event_schedule(gspread_client) -> None:
@@ -86,15 +88,14 @@ def update_from_event_schedule(gspread_client) -> None:
   del participant_events[""]
 
   # wipe and reload
-  _TABLE.delete_all_participants()
-  _TABLE.write_events(participant_events)
+  PARTICIPANTS_TABLE.delete_all_participants()
+  PARTICIPANTS_TABLE.write_events(participant_events)
   update_timestamp(sheet)
 
 
 def handler(event, context):
   try:
-    gspread_client = gspread.api_key(SHEETS_API_KEY)
-    update_from_event_schedule(gspread_client)
+    update_from_event_schedule(GSPREAD_CLIENT)
   except Exception as e:
     import traceback
     traceback.print_exc()
