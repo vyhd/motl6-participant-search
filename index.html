@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <title>MotL 6 Participant Search</title>
+</head>
+<body>
+  <label for="participantList" class="form-label">
+    Participant Search
+  </label>
+  <input id="participantList" class="form-control" list="participants" placeholder="Search participants...">
+  <datalist id="participants"></datalist>
+
+  <div class="spinner-border" role="status" id="participantSpinner" hidden="">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+
+  <table class="table table-striped" id="participantEvents">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Day</th>
+      <th scope="col">Time</th>
+      <th scope="col">Category</th>
+      <th scope="col">Event</th>
+    </tr>
+  </thead>
+  <tbody id="eventTbody"></tbody>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    const API_ENDPOINT = "https://ifxrn9gwff.execute-api.us-east-1.amazonaws.com/Prod"
+
+    const LIST_PARTICIPANTS = `${API_ENDPOINT}/participants`;
+    const LIST_PARTICIPANT_EVENTS = `${API_ENDPOINT}/events`;
+    const LAST_UPDATE = `${API_ENDPOINT}/last-update`;
+
+    const inputNode = document.getElementById("participantList");
+    const participantsNode = document.getElementById("participants");
+    const spinnerNode = document.getElementById("participantSpinner");
+    const tableNode = document.getElementById("participantEvents")
+
+    inputNode.addEventListener("change", (event) => {
+      spinnerNode.hidden = false;
+      loadParticipantEvents(inputNode.value);
+    })
+
+    async function loadParticipantEvents(name) {
+      const resp = await fetch(`${LIST_PARTICIPANT_EVENTS}?name=${name}`)
+      const data = await resp.json();
+      console.log(data);
+
+      const newTbody = document.createElement("tbody");
+      data["events"].forEach((ev) => {
+        let newRow = newTbody.insertRow();
+        newRow.insertCell().textContent = ev["day"];
+        newRow.insertCell().textContent = ev["time"];
+        newRow.insertCell().textContent = ev["category"];
+        newRow.insertCell().textContent = ev["event"];
+      })
+
+      tableNode.querySelector("tbody").remove();
+      tableNode.appendChild(newTbody);
+
+      spinnerNode.hidden = true;
+    }
+
+    async function loadParticipants() {
+      try {
+        const resp = await fetch(LIST_PARTICIPANTS);
+        const data = await resp.json();
+
+        // set the name *and* value to make validation easier for us above
+        const childNodes = data["names"].map((n) => new Option(n, n));
+        participantsNode.append(...childNodes)
+      } catch {
+        debugger;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadParticipants);
+  </script>
+</body>
+</html>
