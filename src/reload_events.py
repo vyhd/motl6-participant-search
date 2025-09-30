@@ -11,7 +11,7 @@ from .participants import ParticipantTable, Event
 _TABLE = ParticipantTable()
 
 # this sheet is tied tightly to the traversal code below, so it may as well live here too
-EVENT_SCHEDULE_SHEET_ID = "1vjNzS_-PXPbEyCr7LfQ2iaV58iwOHDRlXBFjq96Kyhw"
+EVENT_SCHEDULE_SHEET_ID = "1tAGWcnSkPZmMhpDqkyeGkSeAvICGGRCBpXlqkh6GVJU"
 
 
 def sheet_needs_update(sheet: gspread.Spreadsheet) -> bool:
