@@ -12,7 +12,12 @@ _TABLE = ParticipantTable()
 
 def list_participants_lambda(event, context) -> ProxyResponse:
     try:
-        response = {"names": sorted(_TABLE.list_participants())}
+        names = _TABLE.list_participants()
+
+        # quick hack to strip out more names that shouldn't really be in there,
+        # but are getting caught up an in edge case around comma + newline parses
+        names = [n for n in names if not n.startswith("Day ") and not n.startswith("Pool ")]
+        response = {"names": sorted(names, key=str.lower)}
 
         print(f"Response: {response}")
         return {"statusCode": 200, "body": json.dumps(response)}

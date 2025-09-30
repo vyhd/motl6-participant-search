@@ -48,7 +48,7 @@ class ParticipantTable:
         names = [item["name"]["S"] for page in paginator for item in page["Items"]]
         names = [name for name in names if not name.startswith("__")]
 
-        return sorted(names)
+        return names
 
     def list_events(self, participant_name: str) -> Iterable[Event]:
         response = self.table_client.get_item(Key={"name": participant_name})
