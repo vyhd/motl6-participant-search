@@ -78,7 +78,7 @@ Resources:
         Variables:
           GOOGLE_API_KEY: !Ref GoogleApiKey
       Policies:
-        - DynamoDBReadPolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref ParticipantTable
       Events:
         CheckForUpdatesFrequently:
