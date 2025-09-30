@@ -13,10 +13,6 @@
   <input id="participantList" class="form-control" list="participants" placeholder="Search participants...">
   <datalist id="participants"></datalist>
 
-  <div class="spinner-border" role="status" id="participantSpinner" hidden="">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-
   <table class="table table-striped" id="participantEvents">
   <thead class="thead-dark">
     <tr>
@@ -27,59 +23,71 @@
     </tr>
   </thead>
   <tbody id="eventTbody"></tbody>
+  </table>
+
+  <div class="spinner-border" role="status" id="participantSpinner" hidden="">
+    <span class="visually-hidden">Loading...</span>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  <script src="index.js"></script>
+
   <script type="text/javascript">
-    const API_ENDPOINT = "https://ifxrn9gwff.execute-api.us-east-1.amazonaws.com/Prod"
-
-    const LIST_PARTICIPANTS = `${API_ENDPOINT}/participants`;
-    const LIST_PARTICIPANT_EVENTS = `${API_ENDPOINT}/events`;
-    const LAST_UPDATE = `${API_ENDPOINT}/last-update`;
-
     const inputNode = document.getElementById("participantList");
     const participantsNode = document.getElementById("participants");
     const spinnerNode = document.getElementById("participantSpinner");
     const tableNode = document.getElementById("participantEvents")
 
-    inputNode.addEventListener("change", (event) => {
-      spinnerNode.hidden = false;
-      loadParticipantEvents(inputNode.value);
-    })
+    function setParticipants(participants) {
+      /* Given an array of participants, load them into the DOM. */
+      console.debug("setParticipants", participants);
+      const childNodes = participants.map((n) => new Option(n, n));
+      participantsNode.replaceChildren(...childNodes);
+    }
 
-    async function loadParticipantEvents(name) {
-      const resp = await fetch(`${LIST_PARTICIPANT_EVENTS}?name=${name}`)
-      const data = await resp.json();
-      console.log(data);
+    function setEvent(event) {
+      console.debug("setEvent", event);
+      inputNode.value = event["name"];
 
       const newTbody = document.createElement("tbody");
-      data["events"].forEach((ev) => {
+      event["events"].forEach((ev) => {
         let newRow = newTbody.insertRow();
-        newRow.insertCell().textContent = ev["day"];
-        newRow.insertCell().textContent = ev["time"];
-        newRow.insertCell().textContent = ev["category"];
-        newRow.insertCell().textContent = ev["event"];
+        for (const key of ["day", "time", "category", "event"]) {
+          newRow.insertCell().textContent = ev[key];
+        }
       })
 
       tableNode.querySelector("tbody").remove();
       tableNode.appendChild(newTbody);
-
       spinnerNode.hidden = true;
     }
 
-    async function loadParticipants() {
-      try {
-        const resp = await fetch(LIST_PARTICIPANTS);
-        const data = await resp.json();
+    let client = new ParticipantClient(setParticipants, setEvent);
 
-        // set the name *and* value to make validation easier for us above
-        const childNodes = data["names"].map((n) => new Option(n, n));
-        participantsNode.append(...childNodes)
-      } catch {
-        debugger;
-      }
+    async function doUpdate() {
+      console.debug("update()")
+      await client.update();
     }
 
-    document.addEventListener('DOMContentLoaded', loadParticipants);
+    document.addEventListener('DOMContentLoaded', doUpdate);
+
+    // iOS handles datalists horribly, so we manually keep results low by having the user type in
+    // at least one character before we populate the participants list.
+
+    inputNode.addEventListener("input", (event) => {
+      let name = inputNode.value;
+      console.debug("input", event, name);
+      if (name.length > 0) {
+        const matches = client.participants.filter((n) => n.toLowerCase().startsWith(name));
+        setParticipants(matches);
+      }
+
+      if (client.participants.includes(inputNode.value)) {
+        console.debug("name matches, doing fetch")
+        spinnerNode.hidden = false;
+        client.fetchEvents(inputNode.value);
+      }
+    })
   </script>
 </body>
 </html>
