@@ -18,7 +18,7 @@ def sheet_needs_update(sheet: gspread.Spreadsheet) -> bool:
   """If True, the spreadsheet is updated and we need new records. If False, it can be skipped."""
   last_update = sheet.lastUpdateTime
   metadata = _TABLE.get_metadata()
-  last_seen_update = metadata and metadata["lastUpdate"][sheet.id] or "never"
+  last_seen_update = metadata and metadata["lastUpdate"].get(sheet.id) or "never"
 
   if not metadata or last_update != last_seen_update:
     print(f"'{sheet.title}' updated at {last_update}, we last updated {last_seen_update}. Updating.")
