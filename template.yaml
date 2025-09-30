@@ -6,8 +6,8 @@ Transform:
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
-    MemorySize: 128
+    Timeout: 30
+    MemorySize: 256
     Runtime: python3.13
     Architectures:
       - arm64
