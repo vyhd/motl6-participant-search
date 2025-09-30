@@ -4,31 +4,46 @@
   <meta charset="utf8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <title>MotL 6 Participant Search</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet" integrity="sha384-CK2SzKma4jA5H/MXDUU7i1TqZlCFaD4T01vtyDFvPlD97JQyS+IsSh1nI2EFbpyk" crossorigin="anonymous">
+  <title>MotL 6 Schedule Search</title>
 </head>
 <body>
-  <label for="participantList" class="form-label">
-    Participant Search
-  </label>
-  <input id="participantList" class="form-control" list="participants" placeholder="Search participants...">
-  <datalist id="participants"></datalist>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-header">Find your schedule!</h5>
+      <input id="participantList" class="form-control" list="participants" placeholder="Enter username...">
+      <datalist id="participants"></datalist>
 
-  <table class="table table-striped" id="participantEvents">
-  <thead class="thead-dark">
-    <tr>
-      <th scope="col">Day</th>
-      <th scope="col">Time</th>
-      <th scope="col">Category</th>
-      <th scope="col">Event</th>
-    </tr>
-  </thead>
-  <tbody id="eventTbody"></tbody>
-  </table>
+      <table class="table table-striped" id="participantEvents">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">Day</th>
+          <th scope="col">Time</th>
+          <th scope="col">Category</th>
+          <th scope="col">Event</th>
+        </tr>
+      </thead>
+      <tbody id="eventTbody"></tbody>
+      </table>
 
-  <div class="spinner-border" role="status" id="participantSpinner" hidden="">
-    <span class="visually-hidden">Loading...</span>
+      <div class="spinner-border" role="status" id="participantSpinner" hidden="">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div class="card-footer">
+        <div class="list-group">
+          <a class="list-group-item list-group-item-action list-group-item-primary" href="https://docs.google.com/spreadsheets/u/0/d/1tAGWcnSkPZmMhpDqkyeGkSeAvICGGRCBpXlqkh6GVJU/htmlview">
+            <i class="bi bi-file-earmark-spreadsheet-fill"></i> Event Schedule
+          </a>
+          <a class="list-group-item list-group-item-action list-group-item-secondary" href="https://docs.google.com/spreadsheets/u/0/d/1xuiaO5AuWNCPoDmYjgjzH7escQ339T03DSggPbeYOQc/htmlview">
+            <i class="bi bi-file-earmark-spreadsheet-fill"></i> Volunteer Schedule
+          </a>
+          <a class="list-group-item list-group-item-action list-group-item-danger" href="https://discord.com/channels/424935273311240192/1422649974113566771">
+            <i class="bi bi-discord"></i> Report a bug
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   <script src="index.js"></script>
 
